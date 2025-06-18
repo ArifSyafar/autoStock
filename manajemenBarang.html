@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoStock - Manajemen Inventori</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .logo::before {
+            content: "📦";
+            margin-right: 10px;
+            font-size: 24px;
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            margin-left: auto;
+            cursor: pointer;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 70px;
+            width: 250px;
+            height: calc(100vh - 70px);
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            z-index: 999;
+            overflow-y: auto;
+        }
+
+        .user-profile {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .user-name {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .user-role {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .nav-menu {
+            padding: 20px 0;
+        }
+
+        .nav-section {
+            margin-bottom: 20px;
+        }
+
+        .nav-section-title {
+            padding: 0 20px 10px;
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #666;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background-color: #f0f0f0;
+            color: #4CAF50;
+        }
+
+        .nav-item.active {
+            background-color: #4CAF50;
+            color: white;
+            border-left-color: #2E7D32;
+        }
+
+        .nav-icon {
+            margin-right: 12px;
+            font-size: 18px;
+        }
+
+        /* Main content */
+        .main-content {
+            margin-left: 250px;
+            margin-top: 70px;
+            padding: 30px;
+            min-height: calc(100vh - 70px);
+        }
+
+        /* Category tabs */
+        .category-tabs {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .category-tab {
+            padding: 15px 25px;
+            border-radius: 25px;
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .category-tab:nth-child(1) { background: linear-gradient(135deg, #5D7D7D, #4A6B6B); }
+        .category-tab:nth-child(2) { background: linear-gradient(135deg, #7CB342, #689F38); }
+        .category-tab:nth-child(3) { background: linear-gradient(135deg, #5D7D7D, #4A6B6B); }
+        .category-tab:nth-child(4) { background: linear-gradient(135deg, #7CB342, #689F38); }
+        .category-tab:nth-child(5) { background: linear-gradient(135deg, #5D7D7D, #4A6B6B); }
+
+        .category-tab:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+
+        /* Table container */
+        .table-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .table-header {
+            padding: 20px 30px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .category-dropdown {
+            padding: 8px 15px;
+            border: 2px solid #4CAF50;
+            border-radius: 20px;
+            background: white;
+            color: #4CAF50;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Table */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 15px 12px;
+            text-align: left;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .data-table td {
+            padding: 15px 12px;
+            border-bottom: 1px solid #eee;
+            vertical-align: middle;
+        }
+
+        .data-table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .data-table tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        /* Action buttons */
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            width: 35px;
+            height: 35px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-add {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .btn-edit {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            color: white;
+        }
+
+        .btn-delete {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 30px;
+            background: #f8f9fa;
+        }
+
+        .pagination-info {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .pagination-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .pagination-btn {
+            width: 40px;
+            height: 40px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            font-size: 16px;
+        }
+
+        .pagination-btn:hover {
+            border-color: #4CAF50;
+            color: #4CAF50;
+        }
+
+        .pagination-btn.active {
+            background: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .category-tabs {
+                overflow-x: auto;
+                padding-bottom: 10px;
+            }
+
+            .table-container {
+                overflow-x: auto;
+            }
+
+            .data-table {
+                min-width: 800px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="logo">AutoStock</div>
+        <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="user-profile">
+            <div class="user-name">Namasaya</div>
+            <div class="user-role">Ritelku</div>
+        </div>
+
+        <nav class="nav-menu">
+            <div class="nav-section">
+                <a href="index.html" class="nav-item">
+                    <span class="nav-icon">🏠</span>
+                    Dashboard
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Utama</div>
+                <a href="#" class="nav-item active">
+                    <span class="nav-icon">📦</span>
+                    Manajemen Barang
+                </a>
+                <a href="pengaturanNotifikasi.html" class="nav-item">
+                    <span class="nav-icon">👁</span>
+                    Pengaturan Notifikasi
+                </a>
+                <a href="peringatanStok.html" class="nav-item">
+                    <span class="nav-icon">⚠</span>
+                    Peringatan Stok Ulang
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Transaksi</div>
+                <a href="barangMasuk.html" class="nav-item">
+                    <span class="nav-icon">📤</span>
+                    Barang Masuk
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">📋</span>
+                    Rekap Penjualan & Pembelian
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Laporan</div>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    Laporan Analisa
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Bantuan</div>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">ℹ</span>
+                    Tentang Aplikasi
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Category Tabs -->
+        <div class="category-tabs">
+            <a href="#" class="category-tab">Elektronik</a>
+            <a href="#" class="category-tab">Sembako</a>
+            <a href="#" class="category-tab">Perabotan</a>
+            <a href="#" class="category-tab">Minuman</a>
+            <a href="#" class="category-tab">Snack</a>
+        </div>
+
+        <!-- Table Container -->
+        <div class="table-container">
+            <div class="table-header">
+                <div class="table-title">Daftar Barang</div>
+                <select class="category-dropdown">
+                    <option>Kategorisasi</option>
+                    <option>Elektronik</option>
+                    <option>Sembako</option>
+                    <option>Perabotan</option>
+                    <option>Minuman</option>
+                    <option>Snack</option>
+                </select>
+            </div>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>No.</th>
+                        <th>ID Barang</th>
+                        <th>Nama Barang</th>
+                        <th>Stok</th>
+                        <th>Satuan</th>
+                        <th>Kategori</th>
+                        <th>Harga Awal</th>
+                        <th>Harga Akhir</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>ELK001</td>
+                        <td>Smartphone Samsung Galaxy A54</td>
+                        <td>25</td>
+                        <td>Pcs</td>
+                        <td>Elektronik</td>
+                        <td>Rp 4.500.000</td>
+                        <td>Rp 4.999.000</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="action-btn btn-add" title="Tambah">+</button>
+                                <button class="action-btn btn-edit" title="Edit">✏</button>
+                                <button class="action-btn btn-delete" title="Hapus">🗑</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>SMB001</td>
+                        <td>Beras Premium 5kg</td>
+                        <td>50</td>
+                        <td>Karung</td>
+                        <td>Sembako</td>
+                        <td>Rp 65.000</td>
+                        <td>Rp 75.000</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="action-btn btn-add" title="Tambah">+</button>
+                                <button class="action-btn btn-edit" title="Edit">✏</button>
+                                <button class="action-btn btn-delete" title="Hapus">🗑</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>PRB001</td>
+                        <td>Kursi Kantor Ergonomis</td>
+                        <td>8</td>
+                        <td>Unit</td>
+                        <td>Perabotan</td>
+                        <td>Rp 1.200.000</td>
+                        <td>Rp 1.450.000</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="action-btn btn-add" title="Tambah">+</button>
+                                <button class="action-btn btn-edit" title="Edit">✏</button>
+                                <button class="action-btn btn-delete" title="Hapus">🗑</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>MIN001</td>
+                        <td>Air Mineral Botol 600ml</td>
+                        <td>120</td>
+                        <td>Botol</td>
+                        <td>Minuman</td>
+                        <td>Rp 2.500</td>
+                        <td>Rp 3.500</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="action-btn btn-add" title="Tambah">+</button>
+                                <button class="action-btn btn-edit" title="Edit">✏</button>
+                                <button class="action-btn btn-delete" title="Hapus">🗑</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td>SNK001</td>
+                        <td>Keripik Kentang Original</td>
+                        <td>75</td>
+                        <td>Pack</td>
+                        <td>Snack</td>
+                        <td>Rp 8.000</td>
+                        <td>Rp 12.000</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="action-btn btn-add" title="Tambah">+</button>
+                                <button class="action-btn btn-edit" title="Edit">✏</button>
+                                <button class="action-btn btn-delete" title="Hapus">🗑</button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="pagination">
+                <div class="pagination-info">Menampilkan 5 dari 5 data</div>
+                <div class="pagination-controls">
+                    <button class="pagination-btn">‹</button>
+                    <button class="pagination-btn active">1</button>
+                    <button class="pagination-btn">›</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('open');
+        }
+
+        // Add click handlers for action buttons
+        document.querySelectorAll('.action-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const action = this.classList.contains('btn-add') ? 'Tambah' : 
+                              this.classList.contains('btn-edit') ? 'Edit' : 'Hapus';
+                const row = this.closest('tr');
+                const itemName = row.cells[2].textContent;
+                alert(`${action} item: ${itemName}`);
+            });
+        });
+
+        // Add click handlers for category tabs
+        document.querySelectorAll('.category-tab').forEach(tab => {
+            tab.addEventListener('click', function(e) {
+                document.querySelectorAll('.category-tab').forEach(t => t.style.opacity = '0.7');
+                this.style.opacity = '1';
+                console.log(`Filter by category: ${this.textContent}`);
+            });
+        });
+
+        // Add click handlers for navigation items
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
